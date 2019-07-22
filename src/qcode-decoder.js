@@ -41,7 +41,8 @@ QCodeDecoder.prototype.hasGetUserMedia = function () {
                            navigator.mozGetUserMedia ||
                            navigator.msGetUserMedia;
 
-  return !!(navigator.getUserMedia);
+  return !!(navigator.getUserMedia) ||
+    !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 };
 
 /**
@@ -133,7 +134,7 @@ QCodeDecoder.prototype.decodeFromCamera = function (videoElem, cb, once) {
   if (!this.hasGetUserMedia())
     cb(new Error('Couldn\'t get video from camera'));
 
-  navigator.getUserMedia(this.videoConstraints, function (stream) {
+  var stream_cb = function (stream) {
     videoElem.srcObject = stream;
     scope.videoElem = videoElem;
     scope.stream = stream;
@@ -142,7 +143,13 @@ QCodeDecoder.prototype.decodeFromCamera = function (videoElem, cb, once) {
     setTimeout(function () {
       scope._captureToCanvas.call(scope, videoElem, cb, once);
     }, 500);
-  }, cb);
+  };
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia(this.videoConstraints).then(stream_cb).catch(cb);
+  } else {
+    navigator.getUserMedia(this.videoConstraints, stream_cb, cb);
+  }
 
   return this;
 };
