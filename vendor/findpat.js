@@ -432,8 +432,7 @@ function FinderPatternFinder()
 					//if (Math.abs(pattern.EstimatedModuleSize - average) > 0.2 * average)
                     if (Math.abs(pattern.EstimatedModuleSize - average) > limit)
 					{
-						this.possibleCenters.remove(i);
-						i--;
+						this.possibleCenters.splice(i, 1);
 					}
 				}
 			}
